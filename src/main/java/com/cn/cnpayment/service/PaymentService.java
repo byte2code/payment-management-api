@@ -1,96 +1,114 @@
 package com.cn.cnpayment.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.cn.cnpayment.dal.PaymentDAL;
-import com.cn.cnpayment.entity.Payment;
 import com.cn.cnpayment.exception.ElementAlreadyExistException;
 import com.cn.cnpayment.exception.InvalidInputException;
 import com.cn.cnpayment.exception.NotFoundException;
-
 import jakarta.transaction.Transactional;
-
-import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.cn.cnpayment.entity.Payment;
+import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Complete the PaymentService class as mentioned below:
- * 
- * Tasks:-
- * 
- * a. Autowire PaymentDAL.
- * 
- * b. Complete the following methods:
- * 
- * 1. getPaymentById(int id): This method fetches payment from the dal layer for
- * a specific id.
- * 
- * 2. getPaymentByPaymentType(String paymentType): This method fetches a list of
- * Payment from the dal layer based on the paymentType received.
- * 
- * 3. getPaymentByDescriptionKeyword(String keyword): This method fetches a list
- * of payments from the dal layer based on the keyword received.
- * 
- * 4. getAllPayments(): This method fetches a list of payments from the dal
- * layer.
- * 
- * 5. addPayment(Payment payment): This method saves payment entity into the
- * database using the dal layer.
- * 
- **/
 
 @Service
 public class PaymentService {
 
-    // Auto-wire necessary DAl layer object;
-    @Autowired
-    PaymentDAL paymentDAL;
+	@Autowired
+	PaymentDAL paymentDAL;
 
-    @Transactional
-    public Payment getPaymentById(int id) {
-	// 1. Complete the method body for getting a payment object by id.
-	// 2. add proper annotation for registering this method as a Transaction
-	Payment payment = paymentDAL.getById(id);
-        if (payment == null) {
-            throw new NotFoundException("Payment with id " + id + " not found");
-        }
-        return payment;
-    }
+	@Transactional
+	public Payment getPaymentById(int id) {
 
-    @Transactional
-    public List<Payment> getPaymentByPaymentType(String paymentType) {
-	// 1. Complete the method body for getting all payment objects by payment type.
-	// 2. add proper annotation for registering this method as a Transaction
-	if (!Arrays.asList("Credit", "Debit", "Cash").contains(paymentType)) {
-            throw new InvalidInputException("Invalid payment type: " + paymentType);
-        }
-        return paymentDAL.getByPaymentType(paymentType);
-    }
+		Payment payment=paymentDAL.getById(id);
 
-    @Transactional
-    public List<Payment> getPaymentByDescriptionKeyword(String keyword) {
-	// 1. Complete the method body for getting all payment objects by description
-	// keyword.
-	// 2. add proper annotation for registering this method as a Transaction
-	return paymentDAL.getByPaymentDescription(keyword);
-    }
+		if(payment==null)
+		{
+			throw new NotFoundException("No payment found with id:  "+id);
+		}
+		return payment;
+	}
 
-    @Transactional
-    public List<Payment> getAllPayments() {
-	// 1. Complete the method body for getting all payment objects from database.
-	// 2. add proper annotation for registering this method as a Transaction.
-	return paymentDAL.getAllPayments();
-    }
+	@Transactional
+	public List<Payment> getPaymentByPaymentType(String paymentType) {
 
-    @Transactional
-    public void addPayment(Payment payment) {
-	// 1. Complete the method body for adding a payment entity in the database.
-	// 2. add proper annotation for registering this method as a Transaction.
-	 if (paymentDAL.getById(payment.getId()) != null) {
-	            throw new ElementAlreadyExistException("Payment with id " + payment.getId() + " already exists");
-	        }
-	        paymentDAL.addPayment(payment);
-    }
+		ArrayList<String> validPayments = new ArrayList<String>() {{
+				add("Cash");
+				add("Debit");
+				add("Credit");
+			}};
+		Boolean isValidPayment=false;
+		for(String validPayment : validPayments)
+		{
+			if(validPayment.equalsIgnoreCase(paymentType))
+			{
+				isValidPayment=true;
+				break;
+			}
+		}
+		if(!isValidPayment)
+		{
+			throw new InvalidInputException("Payment type "+ paymentType + "is incorrect");
+		}
+		List<Payment> payment = paymentDAL.getByPaymentType(paymentType);
+
+		if(payment.isEmpty())
+		{
+			throw new NotFoundException("No payments found having paymentType: "+paymentType);
+		}
+		return payment;
+	}
+
+	@Transactional
+	public List<Payment> getPaymentByDescriptionKeyword(String keyword) {
+
+		List<Payment> payments = paymentDAL.getByPaymentDescription(keyword);
+		if(payments.isEmpty())
+		{
+			throw new NotFoundException("No payments found, with description having keyword: "+keyword);
+		}
+		return payments;
+	}
+
+	@Transactional
+	public List<Payment> getAllPayments() {
+
+		List<Payment> payment = paymentDAL.getAllPayments();
+		if(payment.isEmpty())
+		{
+			throw new NotFoundException("No payments found.");
+		}
+		return payment;
+	}
+
+	@Transactional
+	public void addPayment(Payment payment)  {
+	if (paymentDAL.getById(payment.getId())!=null){
+		throw new ElementAlreadyExistException("Payment already exists");
+	}
+			paymentDAL.addPayment(payment);
+	}
+
+	@Transactional
+	public void update(Payment updatePayment) {
+		// 1. Complete the method body for updating a payment object.
+		// 2. add proper annotation for registering this method as a Transaction
+	    paymentDAL.update(updatePayment);
+	}
+
+	@Transactional
+	public void updateDescription(int id, String description) {
+		// 	1. Complete the method body for updating description of a payment.
+		//	2. add proper annotation for registering this method as a Transaction
+	    paymentDAL.updateDescription(id, description);
+	}
+
+	@Transactional
+	public void delete(int id) {
+		//	1. Complete the method body for deleting payment.
+		//	2. add proper annotation for registering this method as a Transaction
+	    paymentDAL.delete(id);
+	}
 
 }
+

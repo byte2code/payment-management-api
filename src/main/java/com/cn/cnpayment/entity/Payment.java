@@ -2,22 +2,20 @@ package com.cn.cnpayment.entity;
 
 import jakarta.persistence.*;
 
-
-// Add required annotations for the entity class.
 @Entity
-@Table(name = "CNPayment")
+@Table(name="Payment")
 public class Payment {
 
-// Add proper annotations for mapping a property as id, column etc.
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 
-    	@Id
-    	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column
 	private int id;
-	@Column(nullable = false)
+
+	@Column
 	private String paymentType;
 
-	@Column(nullable = false)
+	@Column
 	private String description;
 
 	public int getId() {
